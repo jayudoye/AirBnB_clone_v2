@@ -3,6 +3,9 @@
 import cmd
 import sys
 import shlex
+import re
+
+from sqlalchemy.exc import IntegrityError
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -17,19 +20,26 @@ class HBNBCommand(cmd.Cmd):
     """ Contains the functionality for the HBNB console"""
 
     # determines prompt for interactive/non-interactive modes
-    prompt = '(hbnb) ' if sys.__stdin__.isatty() else ''
+    prompt = "(hbnb) " # if sys.__stdin__.isatty() else ''
 
-    classes = {
+    __classes = {
                'BaseModel': BaseModel, 'User': User, 'Place': Place,
                'State': State, 'City': City, 'Amenity': Amenity,
                'Review': Review
               }
-    dot_cmds = ['all', 'count', 'show', 'destroy', 'update', 'delete']
+   # dot_cmds = ['all', 'count', 'show', 'destroy', 'update', 'delete']
     types = {
              'number_rooms': int, 'number_bathrooms': int,
              'max_guest': int, 'price_by_night': int,
              'latitude': float, 'longitude': float
-            }
+             }
+    __commands = {
+        'all': r'^\.all(\(\))$',
+        'count': r'^\.count(\(\))$',
+        'show': r'^\.show(\(.*?\))$',
+        'destroy': r'^\.destroy(\(.*?\))$',
+        'update': r'^\.update(\(.*?\))$',
+    }
 
     def preloop(self):
         """Prints if isatty is false"""
@@ -103,8 +113,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_EOF(self, arg):
         """ Handles EOF to exit program """
-        print()
-        exit()
+        return True
 
     def help_EOF(self):
         """ Prints the help documentation for EOF """
